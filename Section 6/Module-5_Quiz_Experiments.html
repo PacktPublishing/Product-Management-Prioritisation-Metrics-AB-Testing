@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experiments Checkpoint</title>
+<style>
+  :root{--bg:#f6f4ef;--panel:#fffffe;--panel2:#ece8df;--accent:#2451d1;--white:#1b1a21;--muted:#5b5866;
+        --muted2:#8a8694;--coral:#b3261e;--amber:#a15c07;--emerald:#047857;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{background:var(--bg)}
+  body{background:var(--bg);color:var(--white);font-family:'Inter','Helvetica Neue',Arial,sans-serif;
+       -webkit-font-smoothing:antialiased;line-height:1.5;padding:0 16px 64px}
+  .wrap{max-width:820px;margin:0 auto}
+  header{padding:38px 0 18px;position:relative}
+  .kick{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;letter-spacing:.16em;color:var(--muted)}
+  .kdot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px rgba(36,81,209,.8)}
+  h1{font-size:clamp(26px,5vw,38px);font-weight:800;letter-spacing:-.02em;margin-top:12px;line-height:1.08}
+  .lede{color:var(--muted);font-size:15px;margin-top:12px;max-width:66ch}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .pill{font-size:11px;font-weight:800;letter-spacing:.1em;padding:5px 11px;border-radius:999px;
+        border:1px solid rgba(91,88,102,.3);color:var(--muted2)}
+  .pill.t{border-color:rgba(36,81,209,.45);color:var(--accent)}
+  .bar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:rgba(246,244,239,.94);backdrop-filter:blur(6px);
+       padding:11px 0;margin-top:22px;border-bottom:1px solid rgba(91,88,102,.16);
+       display:flex;align-items:center;gap:14px}
+  .track{flex:1;height:6px;border-radius:3px;background:rgba(91,88,102,.16);overflow:hidden}
+  .fill{height:6px;width:0;background:var(--accent);border-radius:3px;transition:width .35s ease}
+  .score{font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap}
+  .score b{color:var(--accent)}
+  .q{border:1px solid rgba(91,88,102,.18);background:var(--panel2);border-radius:14px;
+     padding:20px 22px;margin-top:20px}
+  .tag{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--accent)}
+  .scene{font-size:14px;color:var(--muted);margin-top:11px;font-style:italic}
+  .scene b{color:#3d3a45;font-weight:700;font-style:normal}
+  .stem{font-size:18px;font-weight:800;margin-top:11px;line-height:1.35}
+  .opts{margin-top:15px;display:flex;flex-direction:column;gap:9px}
+  .opt{width:100%;text-align:left;font:inherit;font-size:14.5px;color:#2c2a33;background:var(--panel);
+       border:1.5px solid rgba(91,88,102,.22);border-radius:11px;padding:13px 15px;cursor:pointer;
+       display:flex;gap:12px;align-items:flex-start;transition:border-color .18s,background .18s}
+  .opt:hover:not(.done){border-color:rgba(36,81,209,.45)}
+  .opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .opt .k{flex:0 0 22px;height:22px;border-radius:6px;border:1px solid rgba(91,88,102,.34);
+          font-size:11px;font-weight:800;color:var(--muted2);display:flex;align-items:center;justify-content:center}
+  .opt.correct{border-color:rgba(4,120,87,.7);background:rgba(4,120,87,.10)}
+  .opt.correct .k{border-color:rgba(4,120,87,.7);color:var(--emerald)}
+  .opt.wrong{border-color:rgba(179,38,30,.7);background:rgba(179,38,30,.09)}
+  .opt.wrong .k{border-color:rgba(179,38,30,.7);color:var(--coral)}
+  .opt.done{cursor:default}
+  .opt.dim{opacity:.55}
+  .exp{display:none;margin-top:14px;border-left:2px solid rgba(36,81,209,.5);padding:2px 0 2px 14px;
+       font-size:14px;color:var(--muted)}
+  .exp.show{display:block}
+  .exp b{color:var(--white);font-weight:700}
+  .exp .v{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;margin-bottom:7px}
+  .exp .v.ok{color:var(--emerald)} .exp .v.no{color:var(--coral)}
+  .ref{display:block;margin-top:10px;font-size:12px;color:var(--muted2)}
+  .result{display:none;margin-top:26px;border:1.5px solid rgba(36,81,209,.45);border-radius:14px;
+          padding:24px;background:rgba(36,81,209,.05);text-align:center}
+  .result.show{display:block}
+  .result .big{font-size:52px;font-weight:800;line-height:1;color:var(--accent)}
+  .result .band{font-size:21px;font-weight:800;margin-top:10px}
+  .result .say{color:var(--muted);font-size:14.5px;margin-top:8px;max-width:56ch;margin-left:auto;margin-right:auto}
+  .again{margin-top:16px;font:inherit;font-size:13px;font-weight:800;letter-spacing:.06em;color:var(--accent);
+         background:transparent;border:1.5px solid rgba(36,81,209,.5);border-radius:999px;padding:10px 22px;cursor:pointer}
+  .again:hover{background:rgba(36,81,209,.1)}
+  footer{margin-top:34px;font-size:11px;font-weight:700;letter-spacing:.14em;color:rgba(138,134,148,.8);
+         display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15151b;--panel:#1d1d25;--panel2:#22222b;--accent:#7f9cf5;--white:#ecebf2;--muted:#b4b1bf;--muted2:#8f8c9b;--coral:#f28b82;--amber:#f0b35a;--emerald:#5fd3a6}
+    :root:not([data-theme="light"]) .opt{color:#e3e1ea} :root:not([data-theme="light"]) .scene b{color:#e3e1ea}
+    :root:not([data-theme="light"]) .bar{background:rgba(21,21,27,.94)}}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kick"><span class="kdot"></span>EXPERIMENTS AND A/B TESTING &middot; CHECKPOINT</div>
+    <h1>Experiments Checkpoint</h1>
+    <p class="lede">Five moments from real experiment work: a randomisation choice, a sample-size request, a suspicious split, a result read against its decision rule, and a bright spot found afterwards. Pick an answer to see why it is right or wrong.</p>
+    <div class="meta"><span class="pill t">5 QUESTIONS</span><span class="pill">CUMULATIVE</span><span class="pill">MODERATE TO HARD</span><span class="pill">NO TIME LIMIT</span></div>
+  </header>
+  <div class="bar"><div class="track"><div class="fill" id="fill"></div></div><div class="score" id="score"><b>0</b> / 5 &middot; 0 answered</div></div>
+  <main id="quiz"></main>
+  <div class="result" id="result">
+    <div class="big" id="rbig">0 / 5</div>
+    <div class="band" id="rband"></div>
+    <p class="say" id="rsay"></p>
+    <button class="again" id="again">Take it again</button>
+  </div>
+  <footer><span>PRODUCT MANAGEMENT MODELS &amp; MEASUREMENTS</span><span>EXPERIMENTS AND A/B TESTING</span></footer>
+</div>
+<script>
+const QS = [{"tag": "Designing the Test · unit of randomisation", "scene": "A B2B tool wants to A/B test a new pricing page. Each customer account has several users, and they often discuss upgrades together. The analyst suggests randomising users, “because there are more of them, so we'll get significance faster.”", "stem": "What should you randomise, and why?", "opts": ["Users, because the bigger sample makes the test more trustworthy", "Page views, because each one is an independent decision", "Accounts, so everyone in an account sees the same version and nothing leaks between groups, accepting that you'll need more data than a per-user calculation suggests", "Users, but drop accounts where people saw different versions"], "a": 2, "exp": "Randomise <b>the unit whose behaviour would otherwise leak between groups</b>. If colleagues in one account see two prices, the account sees two products, and the groups stop being independent. Users within an account behave alike, so the effective sample is smaller than the user count, and you plan for that. Dropping mixed accounts afterwards removes people unevenly, which is how a sample ratio mismatch starts.", "ref": "Designing the Test · unit of randomisation. Sample Size and Run Time · the catch for business products."}, {"tag": "Sample Size and Run Time · small effects are expensive", "scene": "Your test is sized to detect a one-point lift on a 20% conversion rate, at 5% significance and 80% power. Your manager asks you to make it detect half a point instead, “to be safe”, without changing the run.", "stem": "What happens to the sample you need?", "opts": ["About twice as many per variant, because the effect is half the size", "About four times as many per variant. With the same traffic, the test can't detect half a point unless it runs far longer", "The same sample, because the significance level hasn't changed", "Fewer, because a smaller effect is easier to rule out"], "a": 1, "exp": "Sample size scales with <b>one over the effect squared</b> (Evan Miller's rule of thumb is about sixteen times the variance divided by the effect squared), so halving the effect roughly quadruples the sample. “To be safe” isn't free: either run far longer, or accept that half a point is out of reach and size the test for the smallest effect you would actually act on.", "ref": "Sample Size and Run Time, Decided Before Launch · the three inputs and the rule of thumb."}, {"tag": "Reading a Readout · health first", "scene": "A 50/50 test: control has 25,300 users and the variant has 24,100. The variant shows +3% on the primary metric, flagged statistically significant. The test page loads an extra script that sometimes times out.", "stem": "Why can't you trust the +3%?", "opts": ["Because the split is unhealthy: something removed users from one group and not the other, so the people left probably differ. Find the leak, fix it, and re-read the results by assignment or rerun", "You can trust it. Significance already accounts for the uneven split", "Because 1,200 users is too small a gap to matter. Re-weight the groups to 50/50 and read on", "Because significance needs a 99% threshold when groups are uneven"], "a": 0, "exp": "That's <b>a sample ratio mismatch</b>. On a working 50/50 split, a gap that size is wildly unlikely by chance. The users who dropped out (perhaps the slow-loading ones) probably differ from those who stayed, so the variant group is no longer comparable. The significance test assumes healthy assignment, so it can't rescue a broken one, and re-weighting can't put back the users who left. Read health before results, every time.", "ref": "Reading a Readout · sample ratio mismatch."}, {"tag": "Designing the Test · the decision rule", "scene": "The signed decision rule says: ship if the whole 95% interval for the effect sits above zero and every guardrail holds; stop if the interval rules out an effect as big as one point; anything else, iterate. The result: +0.3 points, interval from −0.2 to +0.8. Guardrails all hold.", "stem": "What does the rule say?", "opts": ["Ship, because the point estimate is positive and the guardrails hold", "Iterate, because the interval includes zero", "Rerun the test with more traffic until the interval clears zero", "Stop: the whole interval sits below one point, so it rules out an effect as big as one point"], "a": 3, "exp": "Read the interval against the rule, not the point estimate. <b>The upper end, +0.8, is below one point, so the data rules out an effect as big as one point. That is the stop condition.</b> Including zero rules out shipping, but on its own it doesn't mean iterate. Rerunning until it clears zero is chasing the answer you wanted. That's why the rule is signed before the data arrives.", "ref": "Designing the Test · decision rule. Reading a Readout · what the interval means."}, {"tag": "Reading a Readout · unplanned segments", "scene": "The overall result is flat. Afterwards, an analyst slices it eight ways and finds that mobile users in one region show +4 points, “clearly significant.” The regional lead wants to ship to that region now.", "stem": "What is the right call?", "opts": ["Ship to that region, because +4 points is large and significant", "Ignore it, because segment results are never meaningful", "Treat it as a hypothesis: give it a reason, make it the planned segment of a new test, and size that test for it", "Re-run the same test and stop as soon as that segment looks significant again"], "a": 2, "exp": "With enough slices, something always looks good. <b>A segment you didn't plan to test is a hypothesis for the next test, not a result.</b> Planned segments can be real, so ignoring all segments throws away a lead. Stopping when it first looks significant is peeking, which inflates false alarms. In Evan Miller's worst case, 5% becomes 26%.", "ref": "Reading a Readout · peeking and the post-hoc segment trap. The Decision After the Test · iterate."}], BANDS = [[5, "Ready for the cadence", "You can design, size and read a test without fooling yourself, and decide afterwards. Next: making it a team habit."], [4, "One trap still catches you", "Most often it is the decision rule or the unit of randomisation. Re-watch that lesson and fill in the blank experiment brief for a real change."], [3, "The vocabulary is there; the reading isn't yet", "Re-watch Reading a Readout. Practise the order: health, primary metric with its interval, guardrails, then segments."], [0, "Start with why we test", "Re-watch Most Ideas Fail, and That Is the Point, then Designing the Test."]];
+const K = ['A','B','C','D'];
+let answered = 0, score = 0;
+function render(){
+  answered = 0; score = 0;
+  document.getElementById('result').classList.remove('show');
+  const root = document.getElementById('quiz'); root.innerHTML = '';
+  QS.forEach((q, i) => {
+    const card = document.createElement('section');
+    card.className = 'q';
+    card.innerHTML = '<div class="tag">QUESTION ' + (i+1) + ' &middot; ' + q.tag + '</div>' +
+      '<p class="scene">' + q.scene + '</p><p class="stem">' + q.stem + '</p>';
+    const opts = document.createElement('div'); opts.className = 'opts';
+    q.opts.forEach((o, j) => {
+      const b = document.createElement('button');
+      b.className = 'opt'; b.type = 'button';
+      b.innerHTML = '<span class="k">' + K[j] + '</span><span>' + o + '</span>';
+      b.addEventListener('click', () => pick(card, opts, q, j));
+      opts.appendChild(b);
+    });
+    card.appendChild(opts);
+    const exp = document.createElement('div'); exp.className = 'exp'; exp.setAttribute('aria-live','polite');
+    card.appendChild(exp);
+    root.appendChild(card);
+  });
+  update();
+}
+function pick(card, opts, q, j){
+  if (card.dataset.done) return;
+  card.dataset.done = '1';
+  [...opts.children].forEach((b, n) => {
+    b.classList.add('done');
+    if (n === q.a) { b.classList.add('correct'); b.querySelector('.k').textContent = '\u2713'; b.setAttribute('aria-label', 'Correct answer: ' + b.textContent.slice(1)); }
+    else if (n === j) { b.classList.add('wrong'); b.querySelector('.k').textContent = '\u2717'; b.setAttribute('aria-label', 'Your answer, incorrect: ' + b.textContent.slice(1)); }
+    else b.classList.add('dim');
+    b.setAttribute('aria-disabled', 'true');
+  });
+  const ok = j === q.a;
+  if (ok) score++;
+  answered++;
+  const exp = card.querySelector('.exp');
+  exp.innerHTML = '<span class="v ' + (ok ? 'ok">\u2713 CORRECT' : 'no">\u2717 NOT QUITE') + '</span>' + q.exp +
+    '<span class="ref">' + q.ref + '</span>';
+  exp.classList.add('show');
+  update();
+}
+function update(){
+  document.getElementById('fill').style.width = (answered / QS.length * 100) + '%';
+  document.getElementById('score').innerHTML = '<b>' + score + '</b> / ' + QS.length + ' &middot; ' + answered + ' answered';
+  if (answered === QS.length) finish();
+}
+function finish(){
+  const band = BANDS.find(b => score >= b[0]);
+  document.getElementById('rbig').textContent = score + ' / ' + QS.length;
+  document.getElementById('rband').textContent = band[1];
+  document.getElementById('rsay').textContent = band[2];
+  document.getElementById('result').classList.add('show');
+}
+document.getElementById('again').addEventListener('click', () => {
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+render();
+</script>
+</body>
+</html>

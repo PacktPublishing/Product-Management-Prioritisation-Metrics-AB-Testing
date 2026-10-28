@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaluating Ideas Checkpoint</title>
+<style>
+  :root{--bg:#f6f4ef;--panel:#fffffe;--panel2:#ece8df;--accent:#2451d1;--white:#1b1a21;--muted:#5b5866;
+        --muted2:#8a8694;--coral:#b3261e;--amber:#a15c07;--emerald:#047857;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{background:var(--bg)}
+  body{background:var(--bg);color:var(--white);font-family:'Inter','Helvetica Neue',Arial,sans-serif;
+       -webkit-font-smoothing:antialiased;line-height:1.5;padding:0 16px 64px}
+  .wrap{max-width:820px;margin:0 auto}
+  header{padding:38px 0 18px;position:relative}
+  .kick{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;letter-spacing:.16em;color:var(--muted)}
+  .kdot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px rgba(36,81,209,.8)}
+  h1{font-size:clamp(26px,5vw,38px);font-weight:800;letter-spacing:-.02em;margin-top:12px;line-height:1.08}
+  .lede{color:var(--muted);font-size:15px;margin-top:12px;max-width:66ch}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .pill{font-size:11px;font-weight:800;letter-spacing:.1em;padding:5px 11px;border-radius:999px;
+        border:1px solid rgba(91,88,102,.3);color:var(--muted2)}
+  .pill.t{border-color:rgba(36,81,209,.45);color:var(--accent)}
+  .bar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:rgba(246,244,239,.94);backdrop-filter:blur(6px);
+       padding:11px 0;margin-top:22px;border-bottom:1px solid rgba(91,88,102,.16);
+       display:flex;align-items:center;gap:14px}
+  .track{flex:1;height:6px;border-radius:3px;background:rgba(91,88,102,.16);overflow:hidden}
+  .fill{height:6px;width:0;background:var(--accent);border-radius:3px;transition:width .35s ease}
+  .score{font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap}
+  .score b{color:var(--accent)}
+  .q{border:1px solid rgba(91,88,102,.18);background:var(--panel2);border-radius:14px;
+     padding:20px 22px;margin-top:20px}
+  .tag{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--accent)}
+  .scene{font-size:14px;color:var(--muted);margin-top:11px;font-style:italic}
+  .scene b{color:#3d3a45;font-weight:700;font-style:normal}
+  .stem{font-size:18px;font-weight:800;margin-top:11px;line-height:1.35}
+  .opts{margin-top:15px;display:flex;flex-direction:column;gap:9px}
+  .opt{width:100%;text-align:left;font:inherit;font-size:14.5px;color:#2c2a33;background:var(--panel);
+       border:1.5px solid rgba(91,88,102,.22);border-radius:11px;padding:13px 15px;cursor:pointer;
+       display:flex;gap:12px;align-items:flex-start;transition:border-color .18s,background .18s}
+  .opt:hover:not(.done){border-color:rgba(36,81,209,.45)}
+  .opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .opt .k{flex:0 0 22px;height:22px;border-radius:6px;border:1px solid rgba(91,88,102,.34);
+          font-size:11px;font-weight:800;color:var(--muted2);display:flex;align-items:center;justify-content:center}
+  .opt.correct{border-color:rgba(4,120,87,.7);background:rgba(4,120,87,.10)}
+  .opt.correct .k{border-color:rgba(4,120,87,.7);color:var(--emerald)}
+  .opt.wrong{border-color:rgba(179,38,30,.7);background:rgba(179,38,30,.09)}
+  .opt.wrong .k{border-color:rgba(179,38,30,.7);color:var(--coral)}
+  .opt.done{cursor:default}
+  .opt.dim{opacity:.55}
+  .exp{display:none;margin-top:14px;border-left:2px solid rgba(36,81,209,.5);padding:2px 0 2px 14px;
+       font-size:14px;color:var(--muted)}
+  .exp.show{display:block}
+  .exp b{color:var(--white);font-weight:700}
+  .exp .v{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;margin-bottom:7px}
+  .exp .v.ok{color:var(--emerald)} .exp .v.no{color:var(--coral)}
+  .ref{display:block;margin-top:10px;font-size:12px;color:var(--muted2)}
+  .result{display:none;margin-top:26px;border:1.5px solid rgba(36,81,209,.45);border-radius:14px;
+          padding:24px;background:rgba(36,81,209,.05);text-align:center}
+  .result.show{display:block}
+  .result .big{font-size:52px;font-weight:800;line-height:1;color:var(--accent)}
+  .result .band{font-size:21px;font-weight:800;margin-top:10px}
+  .result .say{color:var(--muted);font-size:14.5px;margin-top:8px;max-width:56ch;margin-left:auto;margin-right:auto}
+  .again{margin-top:16px;font:inherit;font-size:13px;font-weight:800;letter-spacing:.06em;color:var(--accent);
+         background:transparent;border:1.5px solid rgba(36,81,209,.5);border-radius:999px;padding:10px 22px;cursor:pointer}
+  .again:hover{background:rgba(36,81,209,.1)}
+  footer{margin-top:34px;font-size:11px;font-weight:700;letter-spacing:.14em;color:rgba(138,134,148,.8);
+         display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15151b;--panel:#1d1d25;--panel2:#22222b;--accent:#7f9cf5;--white:#ecebf2;--muted:#b4b1bf;--muted2:#8f8c9b;--coral:#f28b82;--amber:#f0b35a;--emerald:#5fd3a6}
+    :root:not([data-theme="light"]) .opt{color:#e3e1ea} :root:not([data-theme="light"]) .scene b{color:#e3e1ea}
+    :root:not([data-theme="light"]) .bar{background:rgba(21,21,27,.94)}}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kick"><span class="kdot"></span>EVALUATING PRODUCT IDEAS &middot; CHECKPOINT</div>
+    <h1>Evaluating Ideas Checkpoint</h1>
+    <p class="lede">Five moments from discovery work: a tidy opportunity tree, a Kano survey with odd answers, a fake door that got clicks, a test that passed, and a product-market fit score below the line. Pick an answer to see why it is right or wrong.</p>
+    <div class="meta"><span class="pill t">5 QUESTIONS</span><span class="pill">CUMULATIVE</span><span class="pill">MODERATE TO HARD</span><span class="pill">NO TIME LIMIT</span></div>
+  </header>
+  <div class="bar"><div class="track"><div class="fill" id="fill"></div></div><div class="score" id="score"><b>0</b> / 5 &middot; 0 answered</div></div>
+  <main id="quiz"></main>
+  <div class="result" id="result">
+    <div class="big" id="rbig">0 / 5</div>
+    <div class="band" id="rband"></div>
+    <p class="say" id="rsay"></p>
+    <button class="again" id="again">Take it again</button>
+  </div>
+  <footer><span>PRODUCT MANAGEMENT MODELS &amp; MEASUREMENTS</span><span>EVALUATING PRODUCT IDEAS</span></footer>
+</div>
+<script>
+const QS = [{"tag": "From Outcome to Ideas · one solution per branch", "scene": "A squad shares its opportunity solution tree. Outcome: fewer cancelled subscriptions. Four opportunities, each with exactly one solution, and the four solutions are the four items already on the roadmap. The opportunities were written in the planning meeting.", "stem": "What is the most important problem with this tree?", "opts": ["It needs more opportunities, so add three more from the same meeting", "Nothing. Every solution traces to an opportunity, so the roadmap is justified", "It needs RICE scores on each solution before it can be used", "It is the roadmap drawn sideways: the opportunities should come from customers' own words, and each one should have more than one solution to compare"], "a": 3, "exp": "The tree's job is to turn a feature request into a choice. <b>Opportunities come from real tickets and interviews, and each one gets at least two solutions</b> before you commit. Opportunities invented in a meeting room look tidy and turn out wrong. More of them from the same meeting adds the same problem. Scoring solutions ranks options nobody has compared.", "ref": "From Outcome to Ideas: the Opportunity Solution Tree · two habits, and its limits."}, {"tag": "Running a Kano Survey Properly · questionable answers", "scene": "Your Kano survey on a “scheduled exports” feature comes back. A large share of respondents answered “I like it” to the functional question and also “I like it” to the dysfunctional one.", "stem": "How should you treat those answers?", "opts": ["As questionable: drop them, and because there are a lot of them, rewrite and pilot the question before trusting the result", "As attractive, because they like it when it's there", "As one-dimensional, because they like it either way", "As indifferent, because the two answers cancel out"], "a": 0, "exp": "Liking a feature both with it and without it <b>contradicts itself, so the pair is questionable and dropped</b>. Many questionable answers usually mean the question was worded badly, so you rewrite it and pilot it with a few customers thinking aloud. Attractive is like with, neutral or fine without. One-dimensional is like with, dislike without. Neither fits this pair.", "ref": "Running a Kano Survey Properly · the evaluation table and the wording trap."}, {"tag": "Lean Startup Inside a Company · what a fake door measures", "scene": "For two weeks, your checkout shows a “Pay in 3 instalments” option that doesn't exist yet. 4% of visitors click it and land on a “coming soon” page with a waitlist. Your manager says: “4%! Customers want instalments. Let's build it.”", "stem": "What is the most accurate reading?", "opts": ["It proves demand, because people clicked when given a real choice", "Fake doors are unethical, so the result should be thrown away", "It measures curiosity, not willingness to pay. Instalments move money, so the next test has to be one you can run safely", "It counts as the MVP, so the next step is version one"], "a": 2, "exp": "A fake door <b>measures curiosity, not willingness to pay</b>, and some things, like moving money, can't be faked safely beyond the first click. The ethical line is to tell people straight away that the feature isn't there and never take money or data you can't honour, which the coming-soon page did. An MVP is defined by what it teaches for the least effort, not by being version one.", "ref": "Lean Startup Inside a Company · four test types and their limits."}, {"tag": "Assumption Mapping and the Test Card · evidence moves the inputs", "scene": "A test card's criterion was agreed in advance: “at least +5 points on the target metric, no rise in opt-outs.” Twenty-five volunteer customers, four weeks, no control group. It comes back +7 points with opt-outs flat. Your director says: “Passed. Set RICE confidence to 100% and keep the rest.”", "stem": "What is the honest update?", "opts": ["Set confidence to 100%, because the agreed criterion was met", "Change nothing, because 25 volunteers is too small to count as evidence", "Raise the criterion to +10 points, because +7 was too easy to beat", "Raise confidence, since there is now evidence of value, but lower the impact estimate, because keen volunteers with no control group overstate the gain, and write the evidence beside each change"], "a": 3, "exp": "A passed test card <b>tells you to keep going; it doesn't prove you were right</b>. The evidence justifies higher confidence. Volunteers are keener than everyone else and there was no control group, so impact comes down. Then write the reason next to each number. 100% would need research-grade impact evidence. Ignoring the test wastes it. Moving the criterion after the result is the thing the test card exists to prevent.", "ref": "Assumption Mapping and the Test Card · reading the result and the re-rank. Builds on RICE, Done Honestly."}, {"tag": "Is It Working Yet? · segment before you read the total", "scene": "A product-market fit survey of recent, active users: 31% say they'd be “very disappointed” without the product. Among finance teams it's 47%, and among solo users 15%. A VP proposes rebuilding onboarding for everyone to lift the overall number.", "stem": "What does the Superhuman approach suggest instead?", "opts": ["Focus on finance teams: double down on what the very disappointed love, and fix what holds back the somewhat disappointed who value the same benefit", "Rebuild onboarding for everyone, because 31% is below the 40% benchmark", "Focus on solo users, because they have the most room to improve", "Treat the product as having fit, because one segment is over 40%"], "a": 0, "exp": "Vohra segmented first, then built for <b>the people who loved it most</b>: he doubled down on what very-disappointed users valued and fixed what held back somewhat-disappointed users who valued the same benefit. He set aside the not-disappointed feedback. A broad rebuild chases the average. And the honest answer to “do we have fit?” is “for finance teams, yes; overall, not yet”, not a blanket yes.", "ref": "Is It Working Yet? Product-Market Fit · Ellis's question and Vohra's engine."}], BANDS = [[5, "Ready to measure", "You can buy cheap evidence, read it honestly and let it move the plan. Next: proving that what you built worked."], [4, "One reading still slips", "Most often it is a Kano edge case or a fake-door result. Re-watch that lesson and redo its your-turn step."], [3, "The tools are there; the reading isn't yet", "Re-watch Assumption Mapping and the Test Card. The re-rank shows how evidence should move each input."], [0, "Start from the outcome", "Re-watch From Outcome to Ideas. Every test in this part hangs off that tree."]];
+const K = ['A','B','C','D'];
+let answered = 0, score = 0;
+function render(){
+  answered = 0; score = 0;
+  document.getElementById('result').classList.remove('show');
+  const root = document.getElementById('quiz'); root.innerHTML = '';
+  QS.forEach((q, i) => {
+    const card = document.createElement('section');
+    card.className = 'q';
+    card.innerHTML = '<div class="tag">QUESTION ' + (i+1) + ' &middot; ' + q.tag + '</div>' +
+      '<p class="scene">' + q.scene + '</p><p class="stem">' + q.stem + '</p>';
+    const opts = document.createElement('div'); opts.className = 'opts';
+    q.opts.forEach((o, j) => {
+      const b = document.createElement('button');
+      b.className = 'opt'; b.type = 'button';
+      b.innerHTML = '<span class="k">' + K[j] + '</span><span>' + o + '</span>';
+      b.addEventListener('click', () => pick(card, opts, q, j));
+      opts.appendChild(b);
+    });
+    card.appendChild(opts);
+    const exp = document.createElement('div'); exp.className = 'exp'; exp.setAttribute('aria-live','polite');
+    card.appendChild(exp);
+    root.appendChild(card);
+  });
+  update();
+}
+function pick(card, opts, q, j){
+  if (card.dataset.done) return;
+  card.dataset.done = '1';
+  [...opts.children].forEach((b, n) => {
+    b.classList.add('done');
+    if (n === q.a) { b.classList.add('correct'); b.querySelector('.k').textContent = '\u2713'; b.setAttribute('aria-label', 'Correct answer: ' + b.textContent.slice(1)); }
+    else if (n === j) { b.classList.add('wrong'); b.querySelector('.k').textContent = '\u2717'; b.setAttribute('aria-label', 'Your answer, incorrect: ' + b.textContent.slice(1)); }
+    else b.classList.add('dim');
+    b.setAttribute('aria-disabled', 'true');
+  });
+  const ok = j === q.a;
+  if (ok) score++;
+  answered++;
+  const exp = card.querySelector('.exp');
+  exp.innerHTML = '<span class="v ' + (ok ? 'ok">\u2713 CORRECT' : 'no">\u2717 NOT QUITE') + '</span>' + q.exp +
+    '<span class="ref">' + q.ref + '</span>';
+  exp.classList.add('show');
+  update();
+}
+function update(){
+  document.getElementById('fill').style.width = (answered / QS.length * 100) + '%';
+  document.getElementById('score').innerHTML = '<b>' + score + '</b> / ' + QS.length + ' &middot; ' + answered + ' answered';
+  if (answered === QS.length) finish();
+}
+function finish(){
+  const band = BANDS.find(b => score >= b[0]);
+  document.getElementById('rbig').textContent = score + ' / ' + QS.length;
+  document.getElementById('rband').textContent = band[1];
+  document.getElementById('rsay').textContent = band[2];
+  document.getElementById('result').classList.add('show');
+}
+document.getElementById('again').addEventListener('click', () => {
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+render();
+</script>
+</body>
+</html>

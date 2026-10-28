@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Measuring Success Checkpoint</title>
+<style>
+  :root{--bg:#f6f4ef;--panel:#fffffe;--panel2:#ece8df;--accent:#2451d1;--white:#1b1a21;--muted:#5b5866;
+        --muted2:#8a8694;--coral:#b3261e;--amber:#a15c07;--emerald:#047857;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{background:var(--bg)}
+  body{background:var(--bg);color:var(--white);font-family:'Inter','Helvetica Neue',Arial,sans-serif;
+       -webkit-font-smoothing:antialiased;line-height:1.5;padding:0 16px 64px}
+  .wrap{max-width:820px;margin:0 auto}
+  header{padding:38px 0 18px;position:relative}
+  .kick{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;letter-spacing:.16em;color:var(--muted)}
+  .kdot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px rgba(36,81,209,.8)}
+  h1{font-size:clamp(26px,5vw,38px);font-weight:800;letter-spacing:-.02em;margin-top:12px;line-height:1.08}
+  .lede{color:var(--muted);font-size:15px;margin-top:12px;max-width:66ch}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .pill{font-size:11px;font-weight:800;letter-spacing:.1em;padding:5px 11px;border-radius:999px;
+        border:1px solid rgba(91,88,102,.3);color:var(--muted2)}
+  .pill.t{border-color:rgba(36,81,209,.45);color:var(--accent)}
+  .bar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:rgba(246,244,239,.94);backdrop-filter:blur(6px);
+       padding:11px 0;margin-top:22px;border-bottom:1px solid rgba(91,88,102,.16);
+       display:flex;align-items:center;gap:14px}
+  .track{flex:1;height:6px;border-radius:3px;background:rgba(91,88,102,.16);overflow:hidden}
+  .fill{height:6px;width:0;background:var(--accent);border-radius:3px;transition:width .35s ease}
+  .score{font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap}
+  .score b{color:var(--accent)}
+  .q{border:1px solid rgba(91,88,102,.18);background:var(--panel2);border-radius:14px;
+     padding:20px 22px;margin-top:20px}
+  .tag{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--accent)}
+  .scene{font-size:14px;color:var(--muted);margin-top:11px;font-style:italic}
+  .scene b{color:#3d3a45;font-weight:700;font-style:normal}
+  .stem{font-size:18px;font-weight:800;margin-top:11px;line-height:1.35}
+  .opts{margin-top:15px;display:flex;flex-direction:column;gap:9px}
+  .opt{width:100%;text-align:left;font:inherit;font-size:14.5px;color:#2c2a33;background:var(--panel);
+       border:1.5px solid rgba(91,88,102,.22);border-radius:11px;padding:13px 15px;cursor:pointer;
+       display:flex;gap:12px;align-items:flex-start;transition:border-color .18s,background .18s}
+  .opt:hover:not(.done){border-color:rgba(36,81,209,.45)}
+  .opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .opt .k{flex:0 0 22px;height:22px;border-radius:6px;border:1px solid rgba(91,88,102,.34);
+          font-size:11px;font-weight:800;color:var(--muted2);display:flex;align-items:center;justify-content:center}
+  .opt.correct{border-color:rgba(4,120,87,.7);background:rgba(4,120,87,.10)}
+  .opt.correct .k{border-color:rgba(4,120,87,.7);color:var(--emerald)}
+  .opt.wrong{border-color:rgba(179,38,30,.7);background:rgba(179,38,30,.09)}
+  .opt.wrong .k{border-color:rgba(179,38,30,.7);color:var(--coral)}
+  .opt.done{cursor:default}
+  .opt.dim{opacity:.55}
+  .exp{display:none;margin-top:14px;border-left:2px solid rgba(36,81,209,.5);padding:2px 0 2px 14px;
+       font-size:14px;color:var(--muted)}
+  .exp.show{display:block}
+  .exp b{color:var(--white);font-weight:700}
+  .exp .v{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;margin-bottom:7px}
+  .exp .v.ok{color:var(--emerald)} .exp .v.no{color:var(--coral)}
+  .ref{display:block;margin-top:10px;font-size:12px;color:var(--muted2)}
+  .result{display:none;margin-top:26px;border:1.5px solid rgba(36,81,209,.45);border-radius:14px;
+          padding:24px;background:rgba(36,81,209,.05);text-align:center}
+  .result.show{display:block}
+  .result .big{font-size:52px;font-weight:800;line-height:1;color:var(--accent)}
+  .result .band{font-size:21px;font-weight:800;margin-top:10px}
+  .result .say{color:var(--muted);font-size:14.5px;margin-top:8px;max-width:56ch;margin-left:auto;margin-right:auto}
+  .again{margin-top:16px;font:inherit;font-size:13px;font-weight:800;letter-spacing:.06em;color:var(--accent);
+         background:transparent;border:1.5px solid rgba(36,81,209,.5);border-radius:999px;padding:10px 22px;cursor:pointer}
+  .again:hover{background:rgba(36,81,209,.1)}
+  footer{margin-top:34px;font-size:11px;font-weight:700;letter-spacing:.14em;color:rgba(138,134,148,.8);
+         display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15151b;--panel:#1d1d25;--panel2:#22222b;--accent:#7f9cf5;--white:#ecebf2;--muted:#b4b1bf;--muted2:#8f8c9b;--coral:#f28b82;--amber:#f0b35a;--emerald:#5fd3a6}
+    :root:not([data-theme="light"]) .opt{color:#e3e1ea} :root:not([data-theme="light"]) .scene b{color:#e3e1ea}
+    :root:not([data-theme="light"]) .bar{background:rgba(21,21,27,.94)}}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kick"><span class="kdot"></span>MEASURING SUCCESS &middot; CHECKPOINT</div>
+    <h1>Measuring Success Checkpoint</h1>
+    <p class="lede">Five moments from real measurement work: an input that was hit too easily, a North Star candidate, a CEO's suggestion for a feature metric, an alarming drop, and a new target. Pick an answer to see why it is right or wrong.</p>
+    <div class="meta"><span class="pill t">5 QUESTIONS</span><span class="pill">CUMULATIVE</span><span class="pill">MODERATE TO HARD</span><span class="pill">NO TIME LIMIT</span></div>
+  </header>
+  <div class="bar"><div class="track"><div class="fill" id="fill"></div></div><div class="score" id="score"><b>0</b> / 5 &middot; 0 answered</div></div>
+  <main id="quiz"></main>
+  <div class="result" id="result">
+    <div class="big" id="rbig">0 / 5</div>
+    <div class="band" id="rband"></div>
+    <p class="say" id="rsay"></p>
+    <button class="again" id="again">Take it again</button>
+  </div>
+  <footer><span>PRODUCT MANAGEMENT MODELS &amp; MEASUREMENTS</span><span>MEASURING SUCCESS</span></footer>
+</div>
+<script>
+const QS = [{"tag": "Outputs, Inputs and the Metric You Can Move · rebuild the input", "scene": "The onboarding squad's input metric is “share of new users who see the setup checklist.” They put the checklist on every login screen and it reaches 95%. Activation, the output it was meant to push, hasn't moved.", "stem": "What should change?", "opts": ["Nothing yet. Inputs take a quarter to show up in the output", "Rebuild the input around what the customer does, such as the share of new users who complete the step that leads to value, so hitting it means doing what customers value", "Swap the input for activation itself, so the team is measured on the output directly", "Raise the input target to 100%, so every user sees the checklist"], "a": 1, "exp": "It's the Amazon detail-page story again: <b>the input was hit and customers got nothing</b>. A good input is something the team can move, that moves before the output, and that can only be hit by doing what customers value. Seeing a checklist fails the last test. Measuring the team on the output directly gives them a number they can't move this week. A higher target just pushes harder on a broken input.", "ref": "Outputs, Inputs and the Metric You Can Actually Move · Amazon's inputs and the three traits."}, {"tag": "Choosing a North Star · a rate or a count", "scene": "A project-management tool is choosing a North Star. Candidate A: the percentage of projects delivered on schedule. Candidate B: projects delivered on schedule per week. The head of data prefers A, because it is easy to compare month to month.", "stem": "Which is the better North Star, and why?", "opts": ["A, because a percentage is independent of company size and easier to benchmark", "Neither. Monthly recurring revenue is the only true leading indicator", "B, because a rate can rise while the business shrinks, for example if the biggest, busiest customers leave. The count grows with value, and the rate becomes an input under it", "A, because B can be moved directly by one team"], "a": 2, "exp": "The hardest test is: <b>can it go up while the business gets worse?</b> A rate can, if the busiest customers leave. A count of the value delivered grows when more customers use the product, use it more, and succeed more often. Revenue lags the value, so it makes a poor North Star. B is no easier for one team to move than A, since several teams push on it.", "ref": "Choosing a North Star · Amplitude's tests and the rate trap."}, {"tag": "HEART, AARRR and the NPS Question · pick the metric for the goal", "scene": "Before a new “bulk invoice import” feature launches, your VP says: “Let's measure its success with our NPS.” The company's NPS is 28.", "stem": "What is the strongest reply?", "opts": ["Yes. NPS is the metric every board understands, so it should be the feature's metric too", "No. Replace NPS everywhere, because research has shown it doesn't predict anything", "Yes, but only count responses from users who tried the import", "Keep NPS as a company health signal. For the feature, use goals, signals and metrics from the matching HEART categories, such as the import completion rate for task success and the share of businesses that use it for adoption"], "a": 3, "exp": "For a single feature, <b>NPS is a blunt tool</b>: it might move months later, mixed in with everything else. HEART's goals-signals-metrics gives you numbers built for the feature's goal, chosen before launch. The research is mixed, not damning: Keiningham and colleagues found NPS wasn't consistently the best predictor of growth, which is a reason not to rely on it alone, not to ban it. Filtering respondents doesn't fix what the question measures.", "ref": "HEART, AARRR and the NPS Question · two lenses and the NPS evidence."}, {"tag": "Funnels, Cohorts and Diagnosing a Metric Drop · data first", "scene": "Monday, 8am. Signup conversion fell from 8% to 6% over the weekend. Since Friday: a new app release, the end of a marketing campaign, and an update to the analytics SDK. The CEO asks whether to roll back the release.", "stem": "What do you do first?", "opts": ["Check the data: did a definition change, is anything missing, did tracking break with the SDK update? Only then segment by outside causes, then inside ones", "Roll back the release now, then investigate", "Segment by app version first, because the release is the most likely cause", "Wait a week to see whether it recovers on its own"], "a": 0, "exp": "The routine is <b>data first, then outside segments (platform, region, channel), then inside ones (releases, experiments, new vs existing)</b>, because many scary drops turn out to be a pipeline, definition or tracking change, and an SDK update is a prime suspect. Also agree what the number is: 8% to 6% is two points, or 25% relative. Rolling back first risks fixing the wrong thing. Waiting leaves a possibly real problem running.", "ref": "Funnels, Cohorts and Diagnosing a Metric Drop · the three-step drop routine."}, {"tag": "Goodhart's Law and Guardrails · guardrails before the target", "scene": "The head of support sets a target for the year: 90% of tickets closed within 24 hours. You've been asked to make it work.", "stem": "Which set-up best follows the course?", "opts": ["Launch the target now and add guardrails after the first month, once you can see which side effects appear", "Write down the target's definition, including which tickets count, and agree guardrails such as reopen rate and post-ticket satisfaction, each with a baseline and a limit, before the target starts", "Add two more targets beside it, so no single number dominates", "Drop the target, because any measure that becomes a target stops being useful"], "a": 1, "exp": "When a measure becomes a target, people do what the number asks: closing tickets early, or quietly excluding the hard ones. The defence is <b>guardrails with a baseline and a limit, plus a written definition of what counts, agreed before the work starts</b>. Added afterwards, a guardrail looks like an excuse. More targets just add more numbers to game. Goodhart's law argues for guardrails, not for having no targets.", "ref": "Goodhart's Law and Guardrails · gaming paths and guardrail metrics."}], BANDS = [[5, "Ready to experiment", "You can pick metrics that track value, spot the gaming paths, and keep calm when a number drops. Next: proving cause with experiments."], [4, "One metric habit to sharpen", "Usually it is the rate-versus-count test or the data-first routine. Re-watch that lesson and redo its your-turn step."], [3, "Good instincts, shaky defences", "Re-watch Goodhart's Law and Guardrails, then design one guardrail for a real target at work."], [0, "Start from inputs and outputs", "Re-watch Outputs, Inputs and the Metric You Can Actually Move. The rest of this part builds on that split."]];
+const K = ['A','B','C','D'];
+let answered = 0, score = 0;
+function render(){
+  answered = 0; score = 0;
+  document.getElementById('result').classList.remove('show');
+  const root = document.getElementById('quiz'); root.innerHTML = '';
+  QS.forEach((q, i) => {
+    const card = document.createElement('section');
+    card.className = 'q';
+    card.innerHTML = '<div class="tag">QUESTION ' + (i+1) + ' &middot; ' + q.tag + '</div>' +
+      '<p class="scene">' + q.scene + '</p><p class="stem">' + q.stem + '</p>';
+    const opts = document.createElement('div'); opts.className = 'opts';
+    q.opts.forEach((o, j) => {
+      const b = document.createElement('button');
+      b.className = 'opt'; b.type = 'button';
+      b.innerHTML = '<span class="k">' + K[j] + '</span><span>' + o + '</span>';
+      b.addEventListener('click', () => pick(card, opts, q, j));
+      opts.appendChild(b);
+    });
+    card.appendChild(opts);
+    const exp = document.createElement('div'); exp.className = 'exp'; exp.setAttribute('aria-live','polite');
+    card.appendChild(exp);
+    root.appendChild(card);
+  });
+  update();
+}
+function pick(card, opts, q, j){
+  if (card.dataset.done) return;
+  card.dataset.done = '1';
+  [...opts.children].forEach((b, n) => {
+    b.classList.add('done');
+    if (n === q.a) { b.classList.add('correct'); b.querySelector('.k').textContent = '\u2713'; b.setAttribute('aria-label', 'Correct answer: ' + b.textContent.slice(1)); }
+    else if (n === j) { b.classList.add('wrong'); b.querySelector('.k').textContent = '\u2717'; b.setAttribute('aria-label', 'Your answer, incorrect: ' + b.textContent.slice(1)); }
+    else b.classList.add('dim');
+    b.setAttribute('aria-disabled', 'true');
+  });
+  const ok = j === q.a;
+  if (ok) score++;
+  answered++;
+  const exp = card.querySelector('.exp');
+  exp.innerHTML = '<span class="v ' + (ok ? 'ok">\u2713 CORRECT' : 'no">\u2717 NOT QUITE') + '</span>' + q.exp +
+    '<span class="ref">' + q.ref + '</span>';
+  exp.classList.add('show');
+  update();
+}
+function update(){
+  document.getElementById('fill').style.width = (answered / QS.length * 100) + '%';
+  document.getElementById('score').innerHTML = '<b>' + score + '</b> / ' + QS.length + ' &middot; ' + answered + ' answered';
+  if (answered === QS.length) finish();
+}
+function finish(){
+  const band = BANDS.find(b => score >= b[0]);
+  document.getElementById('rbig').textContent = score + ' / ' + QS.length;
+  document.getElementById('rband').textContent = band[1];
+  document.getElementById('rsay').textContent = band[2];
+  document.getElementById('result').classList.add('show');
+}
+document.getElementById('again').addEventListener('click', () => {
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+render();
+</script>
+</body>
+</html>
