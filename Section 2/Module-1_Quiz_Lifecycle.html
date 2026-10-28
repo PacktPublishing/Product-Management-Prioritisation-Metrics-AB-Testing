@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lifecycle Checkpoint</title>
+<style>
+  :root{--bg:#f6f4ef;--panel:#fffffe;--panel2:#ece8df;--accent:#2451d1;--white:#1b1a21;--muted:#5b5866;
+        --muted2:#8a8694;--coral:#b3261e;--amber:#a15c07;--emerald:#047857;}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{background:var(--bg)}
+  body{background:var(--bg);color:var(--white);font-family:'Inter','Helvetica Neue',Arial,sans-serif;
+       -webkit-font-smoothing:antialiased;line-height:1.5;padding:0 16px 64px}
+  .wrap{max-width:820px;margin:0 auto}
+  header{padding:38px 0 18px;position:relative}
+  .kick{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;letter-spacing:.16em;color:var(--muted)}
+  .kdot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px rgba(36,81,209,.8)}
+  h1{font-size:clamp(26px,5vw,38px);font-weight:800;letter-spacing:-.02em;margin-top:12px;line-height:1.08}
+  .lede{color:var(--muted);font-size:15px;margin-top:12px;max-width:66ch}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .pill{font-size:11px;font-weight:800;letter-spacing:.1em;padding:5px 11px;border-radius:999px;
+        border:1px solid rgba(91,88,102,.3);color:var(--muted2)}
+  .pill.t{border-color:rgba(36,81,209,.45);color:var(--accent)}
+  .bar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:rgba(246,244,239,.94);backdrop-filter:blur(6px);
+       padding:11px 0;margin-top:22px;border-bottom:1px solid rgba(91,88,102,.16);
+       display:flex;align-items:center;gap:14px}
+  .track{flex:1;height:6px;border-radius:3px;background:rgba(91,88,102,.16);overflow:hidden}
+  .fill{height:6px;width:0;background:var(--accent);border-radius:3px;transition:width .35s ease}
+  .score{font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap}
+  .score b{color:var(--accent)}
+  .q{border:1px solid rgba(91,88,102,.18);background:var(--panel2);border-radius:14px;
+     padding:20px 22px;margin-top:20px}
+  .tag{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--accent)}
+  .scene{font-size:14px;color:var(--muted);margin-top:11px;font-style:italic}
+  .scene b{color:#3d3a45;font-weight:700;font-style:normal}
+  .stem{font-size:18px;font-weight:800;margin-top:11px;line-height:1.35}
+  .opts{margin-top:15px;display:flex;flex-direction:column;gap:9px}
+  .opt{width:100%;text-align:left;font:inherit;font-size:14.5px;color:#2c2a33;background:var(--panel);
+       border:1.5px solid rgba(91,88,102,.22);border-radius:11px;padding:13px 15px;cursor:pointer;
+       display:flex;gap:12px;align-items:flex-start;transition:border-color .18s,background .18s}
+  .opt:hover:not(.done){border-color:rgba(36,81,209,.45)}
+  .opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .opt .k{flex:0 0 22px;height:22px;border-radius:6px;border:1px solid rgba(91,88,102,.34);
+          font-size:11px;font-weight:800;color:var(--muted2);display:flex;align-items:center;justify-content:center}
+  .opt.correct{border-color:rgba(4,120,87,.7);background:rgba(4,120,87,.10)}
+  .opt.correct .k{border-color:rgba(4,120,87,.7);color:var(--emerald)}
+  .opt.wrong{border-color:rgba(179,38,30,.7);background:rgba(179,38,30,.09)}
+  .opt.wrong .k{border-color:rgba(179,38,30,.7);color:var(--coral)}
+  .opt.done{cursor:default}
+  .opt.dim{opacity:.55}
+  .exp{display:none;margin-top:14px;border-left:2px solid rgba(36,81,209,.5);padding:2px 0 2px 14px;
+       font-size:14px;color:var(--muted)}
+  .exp.show{display:block}
+  .exp b{color:var(--white);font-weight:700}
+  .exp .v{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;margin-bottom:7px}
+  .exp .v.ok{color:var(--emerald)} .exp .v.no{color:var(--coral)}
+  .ref{display:block;margin-top:10px;font-size:12px;color:var(--muted2)}
+  .result{display:none;margin-top:26px;border:1.5px solid rgba(36,81,209,.45);border-radius:14px;
+          padding:24px;background:rgba(36,81,209,.05);text-align:center}
+  .result.show{display:block}
+  .result .big{font-size:52px;font-weight:800;line-height:1;color:var(--accent)}
+  .result .band{font-size:21px;font-weight:800;margin-top:10px}
+  .result .say{color:var(--muted);font-size:14.5px;margin-top:8px;max-width:56ch;margin-left:auto;margin-right:auto}
+  .again{margin-top:16px;font:inherit;font-size:13px;font-weight:800;letter-spacing:.06em;color:var(--accent);
+         background:transparent;border:1.5px solid rgba(36,81,209,.5);border-radius:999px;padding:10px 22px;cursor:pointer}
+  .again:hover{background:rgba(36,81,209,.1)}
+  footer{margin-top:34px;font-size:11px;font-weight:700;letter-spacing:.14em;color:rgba(138,134,148,.8);
+         display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15151b;--panel:#1d1d25;--panel2:#22222b;--accent:#7f9cf5;--white:#ecebf2;--muted:#b4b1bf;--muted2:#8f8c9b;--coral:#f28b82;--amber:#f0b35a;--emerald:#5fd3a6}
+    :root:not([data-theme="light"]) .opt{color:#e3e1ea} :root:not([data-theme="light"]) .scene b{color:#e3e1ea}
+    :root:not([data-theme="light"]) .bar{background:rgba(21,21,27,.94)}}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kick"><span class="kdot"></span>THE PRODUCT DEVELOPMENT LIFECYCLE &middot; CHECKPOINT</div>
+    <h1>Lifecycle Checkpoint</h1>
+    <p class="lede">Five moments from real product work: a prototype your VP wants shipped, a finance director reading a lifecycle chart, a retro, a CEO's message in the planning channel, a compliance escalation. Each one asks which stage, which risk or which question. Pick an answer to see why it is right or wrong.</p>
+    <div class="meta"><span class="pill t">5 QUESTIONS</span><span class="pill">CUMULATIVE</span><span class="pill">MODERATE TO HARD</span><span class="pill">NO TIME LIMIT</span></div>
+  </header>
+  <div class="bar"><div class="track"><div class="fill" id="fill"></div></div><div class="score" id="score"><b>0</b> / 5 &middot; 0 answered</div></div>
+  <main id="quiz"></main>
+  <div class="result" id="result">
+    <div class="big" id="rbig">0 / 5</div>
+    <div class="band" id="rband"></div>
+    <p class="say" id="rsay"></p>
+    <button class="again" id="again">Take it again</button>
+  </div>
+  <footer><span>PRODUCT MANAGEMENT MODELS &amp; MEASUREMENTS</span><span>THE PRODUCT DEVELOPMENT LIFECYCLE</span></footer>
+</div>
+<script>
+const QS = [{"tag": "The PDLC Is a Pattern &middot; build to learn vs build to earn", "scene": "On Tuesday you build a working payment-link prototype with an AI prototyping tool. Six of eight customers you show it to say they would use it. Your VP says: &ldquo;Great, ship that prototype to everyone next week.&rdquo;", "stem": "What is the most accurate reply?", "opts": ["&ldquo;Agreed. Customers have validated it, and that was the hard part.&rdquo;", "&ldquo;The prototype has reduced value and usability risk. It has not shown scale, security, privacy or reliability, and that is what delivery builds.&rdquo;", "&ldquo;We should keep testing until all eight customers say yes before we build anything.&rdquo;", "&ldquo;Prototype feedback cannot tell us anything about value, so we should ignore it.&rdquo;"], "a": 1, "exp": "Cagan's line (SVPG, Apr 2026) is that discovery is <b>building to learn</b> and delivery is <b>building to earn</b>. A cheap prototype is excellent evidence about whether people want something and can use it. It says little about scale, security, privacy or reliability. Waiting for eight out of eight is a false bar, and prototypes are exactly how teams test value.", "ref": "The PDLC Is a Pattern &middot; dual-track and the AI prototyping shift. The Four Risks &middot; what AI makes cheaper."}, {"tag": "The PDLC Is a Pattern &middot; the lifecycle's limit", "scene": "A finance director reads a lifecycle chart in an offsite deck and says: &ldquo;Core invoicing is in maturity, so decline comes next. Let's start winding down investment now.&rdquo;", "stem": "What is the strongest response?", "opts": ["Agree. The curve is a reliable forecast, so decline is the next step", "Argue that core invoicing is still in growth, so investment should go up", "Point out that the lifecycle stopped applying to software products years ago", "Treat the stage as a lens, not a forecast: stages are clearest in hindsight, and Levitt argued life can be extended with new uses and customers"], "a": 3, "exp": "Levitt popularised the product lifecycle in 1965 and argued that new uses and new customers can extend a product's life. <b>Maturity changes the question</b> to what to protect and where effort pays back. It does not mean decline is due. Arguing about which stage you are in misses the point, and calling the model dead is not supported either.", "ref": "The PDLC Is a Pattern &middot; product lifecycle (Levitt, HBR 1965) and its limit."}, {"tag": "The Four Risks &middot; who owns which risk", "scene": "Retro on instant payouts. Customers loved it, it was one tap to use, engineering shipped on schedule, and it was paused a quarter later because every payout cost more in partner fees than Tallyrow charged.", "stem": "In Cagan's model, whose risk was that?", "opts": ["The product manager's: business viability is one of the two risks the PM owns", "The finance lead's, because the problem showed up in a partner invoice", "The lead engineer's, because the feature was built on the partner's service", "The designer's, because a better pricing screen would have prevented it"], "a": 0, "exp": "Cagan (SVPG, 2017) gives the PM <b>value and business viability</b>, the designer usability, and the lead engineer feasibility. Finance found the problem but did not own the risk; the cheap check would have been one question to finance before building. Feasibility cleared, because the feature was built and shipped. Usability cleared too.", "ref": "The Four Risks &middot; the four risks and their owners."}, {"tag": "The Decision Map &middot; the decision map", "scene": "Maya, the CEO, posts in the planning channel: &ldquo;Can we just RICE everything and see what comes out on top?&rdquo; Smart reminders, her favourite, has never been tested with a customer.", "stem": "What is the best reply?", "opts": ["Score everything, and give smart reminders 100% confidence because the CEO backs it", "Refuse to rank anything until every backlog item has been tested with customers", "Run a Kano survey on all eight items instead, because Kano is more customer-centric than RICE", "Rank the backlog, but send smart reminders to discovery first with one cheap test of whether customers want them"], "a": 3, "exp": "<b>Name the question first, then pick the model.</b> RICE answers &ldquo;which gives the most expected impact for the effort&rdquo;; the open question about smart reminders is whether customers want them at all, which is a discovery question. Setting confidence to 100% because the CEO backs the idea is exactly how RICE gets gamed. Blocking all ranking, or swapping in one different model for everything, repeats the same mistake from the other side.", "ref": "The Decision Map &middot; the decision map. Builds on The 60% Problem: defend with inputs, not just a score."}, {"tag": "The Decision Map &middot; urgency is its own question", "scene": "A reach-based score puts e-invoicing near the bottom, because only one market is affected. Aisha, the compliance lead, escalates: the legal deadline in that market is fixed.", "stem": "What is the right next move?", "opts": ["Raise e-invoicing's Impact score to 3 so that it climbs the ranking", "Recognise that a fixed date is an urgency question the reach-based score does not measure, and size it with Cost of Delay", "Keep the ranking, because changing it after an escalation undermines the framework", "Mark e-invoicing a Must and everything else a Won't"], "a": 1, "exp": "A reach-based score can undervalue a fixed-date item, because <b>it does not measure urgency</b>. Cost of Delay does, and its external-deadline profile is built for this kind of item. Inflating Impact to win the argument is gaming the score. Holding the ranking ignores real information. Making everything else a Won't misuses MoSCoW, which scopes a timebox rather than ranking a backlog.", "ref": "The Decision Map &middot; the decide stop: ranking models vs urgency models. Full treatment later in prioritisation."}], BANDS = [[5, "Ready for prioritisation", "You can tell which question is being asked, who owns the risk, and what a lifecycle stage does and doesn't tell you. Keep the decision map next to you for the prioritisation models that come next."], [4, "One idea still needs work", "Most likely it is the line between building to learn and building to earn, or the PM's ownership of viability. Re-watch The Four Risks and go through the cheat sheet's risk table against something you are working on now."], [3, "The terms are there; the judgement isn't yet", "You know the names, but a wrong answer still looks reasonable in the moment, and that is exactly how a planning call goes. Re-watch The Decision Map, then retake."], [0, "Start again with the pattern", "Re-watch The PDLC Is a Pattern. Once the shared loop and the two lifecycles are clear, the risks and the map follow from them."]];
+const K = ['A','B','C','D'];
+let answered = 0, score = 0;
+function render(){
+  answered = 0; score = 0;
+  document.getElementById('result').classList.remove('show');
+  const root = document.getElementById('quiz'); root.innerHTML = '';
+  QS.forEach((q, i) => {
+    const card = document.createElement('section');
+    card.className = 'q';
+    card.innerHTML = '<div class="tag">QUESTION ' + (i+1) + ' &middot; ' + q.tag + '</div>' +
+      '<p class="scene">' + q.scene + '</p><p class="stem">' + q.stem + '</p>';
+    const opts = document.createElement('div'); opts.className = 'opts';
+    q.opts.forEach((o, j) => {
+      const b = document.createElement('button');
+      b.className = 'opt'; b.type = 'button';
+      b.innerHTML = '<span class="k">' + K[j] + '</span><span>' + o + '</span>';
+      b.addEventListener('click', () => pick(card, opts, q, j));
+      opts.appendChild(b);
+    });
+    card.appendChild(opts);
+    const exp = document.createElement('div'); exp.className = 'exp'; exp.setAttribute('aria-live','polite');
+    card.appendChild(exp);
+    root.appendChild(card);
+  });
+  update();
+}
+function pick(card, opts, q, j){
+  if (card.dataset.done) return;
+  card.dataset.done = '1';
+  [...opts.children].forEach((b, n) => {
+    b.classList.add('done');
+    if (n === q.a) { b.classList.add('correct'); b.querySelector('.k').textContent = '\u2713'; b.setAttribute('aria-label', 'Correct answer: ' + b.textContent.slice(1)); }
+    else if (n === j) { b.classList.add('wrong'); b.querySelector('.k').textContent = '\u2717'; b.setAttribute('aria-label', 'Your answer, incorrect: ' + b.textContent.slice(1)); }
+    else b.classList.add('dim');
+    b.setAttribute('aria-disabled', 'true');
+  });
+  const ok = j === q.a;
+  if (ok) score++;
+  answered++;
+  const exp = card.querySelector('.exp');
+  exp.innerHTML = '<span class="v ' + (ok ? 'ok">\u2713 CORRECT' : 'no">\u2717 NOT QUITE') + '</span>' + q.exp +
+    '<span class="ref">' + q.ref + '</span>';
+  exp.classList.add('show');
+  update();
+}
+function update(){
+  document.getElementById('fill').style.width = (answered / QS.length * 100) + '%';
+  document.getElementById('score').innerHTML = '<b>' + score + '</b> / ' + QS.length + ' &middot; ' + answered + ' answered';
+  if (answered === QS.length) finish();
+}
+function finish(){
+  const band = BANDS.find(b => score >= b[0]);
+  document.getElementById('rbig').textContent = score + ' / ' + QS.length;
+  document.getElementById('rband').textContent = band[1];
+  document.getElementById('rsay').textContent = band[2];
+  document.getElementById('result').classList.add('show');
+}
+document.getElementById('again').addEventListener('click', () => {
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+render();
+</script>
+</body>
+</html>
